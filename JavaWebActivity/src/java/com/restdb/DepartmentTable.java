@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
  * @author Ravilion
  */
 @Path("path")
-public class pathResource {
+public class DepartmentTable {
 long now = Instant.now().toEpochMilli()/ 1000L;
 
  @GET
@@ -71,7 +71,7 @@ long now = Instant.now().toEpochMilli()/ 1000L;
             
         }
     } catch (SQLException | ClassNotFoundException ex) {
-        Logger.getLogger(pathResource.class.getName()).log(Level.SEVERE, null, ex);
+        Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
     }
     finally {
             closeDBConnection(rs, stm, con);
@@ -156,7 +156,7 @@ long now = Instant.now().toEpochMilli()/ 1000L;
  
    
     catch (SQLException | ClassNotFoundException ex) {
-        Logger.getLogger(pathResource.class.getName()).log(Level.SEVERE, null, ex);
+        Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
     }
     finally {
             closeDBConnection(rs, ps, con);
@@ -217,7 +217,7 @@ long now = Instant.now().toEpochMilli()/ 1000L;
     } 
     
     catch (SQLException | ClassNotFoundException ex) {
-        Logger.getLogger(pathResource.class.getName()).log(Level.SEVERE, null, ex);
+        Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
     }
     finally {
             closeDBConnection(rs, stm, con);
