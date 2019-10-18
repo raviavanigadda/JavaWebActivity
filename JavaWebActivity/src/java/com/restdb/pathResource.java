@@ -19,12 +19,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PUT;
 import javax.ws.rs.core.MediaType;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * REST Web Service
- *http://localhost:8080/restfulDatabase/webresources/path/mainDB
+ *http://localhost:8080/JavaWebActivity/webresources/path/mainDB
  * @author Ravilion
  */
 @Path("path")
@@ -60,7 +58,7 @@ public class pathResource {
                 number=rs.getInt("numberEmployee");
         
        }
-
+con.close();
      return id+" "+name+" "+ number;
 }
     
