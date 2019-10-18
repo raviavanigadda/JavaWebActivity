@@ -51,15 +51,16 @@ public class pathResource {
       
       String name = null;
       int id = 0,number = 0;
-      
+      String result ="\n";
       while(rs.next()){
                 id=rs.getInt("department_id");
                 name=rs.getString("department_name");
                 number=rs.getInt("numberEmployee");
-        
+        result += id+" "+name+" "+ number + "\n";
        }
-con.close();
-     return id+" "+name+" "+ number;
+
+     return result;
+
 }
     
 }
