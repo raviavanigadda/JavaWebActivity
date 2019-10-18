@@ -22,7 +22,7 @@ import javax.ws.rs.core.MediaType;
 
 /**
  * REST Web Service
- *http://localhost:8080/JavaWebActivity/webresources/path/mainDB
+ *http://localhost:8080/JavaWebActivity/webresources/path/listDB
  * @author Ravilion
  */
 @Path("path")
@@ -30,8 +30,8 @@ public class pathResource {
 
   
     @GET
-    @Path("mainDB")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Path("listDB")
+    @Produces(MediaType.APPLICATION_JSON)
     public String getText() throws ClassNotFoundException, SQLException {
       
 
@@ -39,28 +39,26 @@ public class pathResource {
       Connection con=DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE","hr", "inf5180");  
       Statement stm= con.createStatement();
    
-      String sql="select departments.department_id, "
-                + "departments.department_name, count(*) numberEmployee "
-                + "from employees join departments "
-                + "on employees.department_id=departments.department_id "
-                + "group by departments.department_id, "
-                + "departments.department_name "
-                + "order by numberEmployee ";
+      String sql="select * from departments ";
 
       ResultSet rs = stm.executeQuery(sql);
       
-      String name = null;
-      int id = 0,number = 0;
+      String dep_name = null;
+      int dep_id=0, manager_id, location_id;
       String result ="\n";
+      
       while(rs.next()){
-                id=rs.getInt("department_id");
-                name=rs.getString("department_name");
-                number=rs.getInt("numberEmployee");
-        result += id+" "+name+" "+ number + "\n";
+                dep_id=rs.getInt("department_id");
+                manager_id=rs.getInt("manager_id");
+                location_id=rs.getInt("location_id");
+                dep_name=rs.getString("department_name");
+         
+        result += dep_id+" "+dep_name+" " +manager_id+" " +location_id + "\n";
        }
 
      return result;
-
 }
+    
+    
     
 }
