@@ -29,18 +29,21 @@ import javax.ws.rs.core.MediaType;
  */
 @Path("path")
 public class DepartmentTable {
-long now = Instant.now().toEpochMilli()/ 1000L;
+    
+    Connection con= null;
+    Statement stm= null;
+    PreparedStatement ps = null;
+    ResultSet rs= null;
+    JSONObject mainObject = new JSONObject();
+    JSONArray mainArray = new JSONArray();
+    
+    long now = Instant.now().toEpochMilli()/ 1000L;
 
  @GET
  @Path("listDB")
  @Produces(MediaType.APPLICATION_JSON)
  public String getText(){
-
-        Connection con= null;
-        Statement stm= null;
-        ResultSet rs= null;
-        JSONObject mainObject = new JSONObject();
-        JSONArray mainArray = new JSONArray();
+        
 
     try {
         Class.forName("oracle.jdbc.OracleDriver");
@@ -101,90 +104,67 @@ long now = Instant.now().toEpochMilli()/ 1000L;
             }
         }
     }
-
-//http://localhost:8080/JavaWebActivity/webresources/path/insertDB&1000&MAD&1001&1002 
+//depid and depname chhange only depid
+//http://localhost:8080/JavaWebActivity/webresources/path/insertDB&1091&MAD&100&1000 
  @GET
  @Path("insertDB&{dID}&{dName}&{mID}&{lID}")
  @Produces(MediaType.APPLICATION_JSON)
- public String getText1(@PathParam("dID") int depID, @PathParam("dName") String depName, @PathParam("mID") int magID, @PathParam("lID") int locID){
+ public String getText1(@PathParam("dID") int depID, @PathParam("dName") String depName, @PathParam("mID") int magID, @PathParam("lID") int locID) throws SQLException, ClassNotFoundException{
 
-        Connection con= null;
-        PreparedStatement ps= null;
-        ResultSet rs= null;
-        JSONObject mainObject = new JSONObject();
-   
-    try {
-        Class.forName("oracle.jdbc.OracleDriver");
-        con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE", "hr", "inf5180");
-        
-      /*  String checksql = "select * from departments where department_id= '"+depID+"'";
-        ps = con.prepareStatement(checksql);
-        rs = ps.executeQuery();
-        
-      if(!rs.next()){
-            mainObject.accumulate("Message","Insertion Failed!");
-            mainObject.accumulate("Status","ERROR");
-            mainObject.accumulate("Timestamp",now);
-        }
-      else {
-          do{*/
-            String sql = "insert into departments values(?,?,?,?)";
+       try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE", "hr", "inf5180");
+            
+            
+            String sql = "INSERT INTO departments(department_id,department_name,manager_id,location_id) values (?, ?, ?, ?)";
             ps = con.prepareStatement(sql);
             
             ps.setInt(1,depID);
             ps.setString(2,depName);
-            ps.setInt(3, magID);
-            ps.setInt(4, locID);
+            ps.setInt(3,magID);
+            ps.setInt(4,locID);
             
-            ps.executeUpdate();
-        
-            mainObject.accumulate("Message","Data Insertion Sucessful");
-            mainObject.accumulate("Status","OK");
-            mainObject.accumulate("Timestamp",now);
+            int flag = ps.executeUpdate();
+
            
-     } //while(rs.next());
-          
-        /* else
-         {
-                    mainObject.accumulate("Message","Insertion Failed!");
-                    mainObject.accumulate("Status","ERROR");
-                    mainObject.accumulate("Timestamp",now);
-                    mainArray.add(mainObject);
-                    mainObject.clear();
-         }
-        */
- 
-   
-    catch (SQLException | ClassNotFoundException ex) {
-        Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    finally {
-            closeDBConnection(rs, ps, con);
+            if(flag==1)
+            {
+                
+                mainObject.accumulate("Message","Data Insertion Sucessful");
+                mainObject.accumulate("Status","OK");
+                mainObject.accumulate("Timestamp",now);
+                
             }
+   
+        } catch (SQLException ex) {
+            mainObject.accumulate("Message","Data not Inserted");
+            mainObject.accumulate("Status","ERROR");
+            mainObject.accumulate("Timestamp",now);
+                
+            Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        catch (ClassNotFoundException ex) { 
+            Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         return mainObject.toString();
-    }
+    
+ }
 
  
- //Single List
- //
+ //Single List of Departments
  @GET
  @Path("singleDB&{dID}")
  @Produces(MediaType.APPLICATION_JSON)
  public String getText2(@PathParam("dID") int depID){
-
-        Connection con= null;
-        PreparedStatement stm= null;
-        ResultSet rs= null;
-        JSONObject mainObject = new JSONObject();
-        JSONArray mainArray = new JSONArray();
 
     try {
         Class.forName("oracle.jdbc.OracleDriver");
         con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE", "hr", "inf5180");
         
         String singlelist = "select * from departments where department_id= '"+depID+"'";
-        stm = con.prepareStatement(singlelist);
-        rs = stm.executeQuery();
+        ps = con.prepareStatement(singlelist);
+        rs = ps.executeQuery();
         
         if(!rs.next()){
             mainObject.accumulate("Message","Data not Found!");
@@ -220,7 +200,7 @@ long now = Instant.now().toEpochMilli()/ 1000L;
         Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
     }
     finally {
-            closeDBConnection(rs, stm, con);
+            closeDBConnection(rs, ps, con);
             }
         return mainObject.toString();
     }
