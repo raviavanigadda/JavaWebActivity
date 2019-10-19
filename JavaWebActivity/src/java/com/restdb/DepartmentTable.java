@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Name: A. Sai Ravi Teja
+ * ID: 1895212
  */
 package com.restdb;
 
@@ -22,11 +21,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import javax.ws.rs.core.MediaType;
 
-/**
- * REST Web Service
- *http://localhost:8080/JavaWebActivity/webresources/path/listDB
- * @author Ravilion
- */
+
+
 @Path("path")
 public class DepartmentTable {
     
@@ -39,6 +35,8 @@ public class DepartmentTable {
     
     long now = Instant.now().toEpochMilli()/ 1000L;
 
+
+//Display all data in table
  @GET
  @Path("listDB")
  @Produces(MediaType.APPLICATION_JSON)
@@ -104,7 +102,8 @@ public class DepartmentTable {
             }
         }
     }
-//depid and depname chhange only depid
+    
+//Insert into database
 //http://localhost:8080/JavaWebActivity/webresources/path/insertDB&1091&MAD&100&1000 
  @GET
  @Path("insertDB&{dID}&{dName}&{mID}&{lID}")
@@ -152,7 +151,7 @@ public class DepartmentTable {
  }
 
  
- //Single List of Departments
+ //Display single List of Departments
  @GET
  @Path("singleDB&{dID}")
  @Produces(MediaType.APPLICATION_JSON)
@@ -205,4 +204,94 @@ public class DepartmentTable {
         return mainObject.toString();
     }
 
+ 
+ //UPDATE single row of Departments
+ //http://localhost:8080/JavaWebActivity/webresources/path/updateDB&1090&CAD
+ @GET
+ @Path("updateDB&{dID}&{dName}")
+ @Produces(MediaType.APPLICATION_JSON)
+ public String getText3(@PathParam("dID") int depID,@PathParam("dName") String depName){
+
+    try {
+        Class.forName("oracle.jdbc.OracleDriver");
+        con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE", "hr", "inf5180");
+        
+       
+        String updatelist = "update departments set department_name= ? where department_id=?";
+        
+        
+        ps = con.prepareStatement(updatelist);
+        ps.setInt(2, depID);
+        ps.setString(1,depName);
+        
+        int flag = ps.executeUpdate();
+    
+        if(flag!=1){
+            mainObject.accumulate("Message","Data not Found!");
+            mainObject.accumulate("Status","ERROR");
+            mainObject.accumulate("Timestamp",now);
+        }
+        else
+        {
+       
+            mainObject.accumulate("Message", "Data updated Sucessfully!");
+            mainObject.accumulate("Status","OK");
+            mainObject.accumulate("Timestamp",now);
+  
+        }
+  
+    } 
+    
+    catch (SQLException | ClassNotFoundException ex) {
+            mainObject.accumulate("Message","Data not Found!");
+            mainObject.accumulate("Status","ERROR");
+            mainObject.accumulate("Timestamp",now);
+        Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    finally {
+            closeDBConnection(rs, ps, con);
+            }
+        return mainObject.toString();
+    }
+ 
+ 
+ //Delete single List of Departments
+ //http://localhost:8080/JavaWebActivity/webresources/path/deleteDB&1090
+ @GET
+ @Path("deleteDB&{dID}")
+ @Produces(MediaType.APPLICATION_JSON)
+ public String getText4(@PathParam("dID") int depID){
+
+    try {
+        Class.forName("oracle.jdbc.OracleDriver");
+        con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE", "hr", "inf5180");
+        
+        String deletelist = "delete from departments where department_id = ?";
+       
+        
+        ps = con.prepareStatement(deletelist);
+        ps.setInt(1,depID);
+        int flag = ps.executeUpdate();
+        
+        
+        if(flag==1){
+            mainObject.accumulate("Message","Data Deleted Sucessfully!");
+            mainObject.accumulate("Status","ERROR");
+            mainObject.accumulate("Timestamp",now);
+        }
+       
+  
+    } 
+    
+    catch (SQLException | ClassNotFoundException ex) {
+            mainObject.accumulate("Message", "Data not Deleted!");
+            mainObject.accumulate("Status","Error!");
+            mainObject.accumulate("Timestamp",now);
+        Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    finally {
+            closeDBConnection(rs, ps, con);
+            }
+        return mainObject.toString();
+    }
 }
