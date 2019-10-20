@@ -29,7 +29,11 @@ public class ApplicationConfig extends Application {
      * If required, comment out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
+        resources.add(com.restdb.Countries.class);
         resources.add(com.restdb.DepartmentTable.class);
+        resources.add(com.restdb.Employees.class);
+        resources.add(com.restdb.JobsTable.class);
+        resources.add(com.restdb.Locations.DepartmentTable.class);
     }
     
 }

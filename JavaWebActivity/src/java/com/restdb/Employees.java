@@ -1,9 +1,9 @@
 /**
  *
- * @author 1895198
- * Shriya vulupala
+ * @author Shriya
  */
 package com.restdb;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,112 +13,282 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import javax.ws.rs.core.MediaType;
 
-@Path("Employeepath")
+
+@Path("Employee")
 public class Employees {
-    Connection con= null;
-    Statement stm= null;
-    PreparedStatement ps = null;
-    ResultSet rs= null;
-    JSONObject mainObject = new JSONObject();
-    JSONArray mainArray = new JSONArray();
-    
-    long now = Instant.now().toEpochMilli()/ 1000L;
 
-//Display all data in table
- @GET
- @Path("listDB")
- @Produces(MediaType.APPLICATION_JSON)
- public String getText(){
+    @Context
+    private UriInfo context;
+
+
+    public Employees() {
+    }
+
+
+    @GET
+    @Produces("application/json")
+    @Path("selectAll")
+    public String getJson() throws SQLException {
+
+        long time = Instant.now().getEpochSecond();
+      
+        JSONObject mainObject = new JSONObject();
+
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE","hr", "inf5180");
+            String sql = "select * from employees";
+            PreparedStatement stm = con.prepareStatement(sql);
+            ResultSet rs = stm.executeQuery(sql);
+
+            if (rs.next()) 
+	     {
+
+                String emp_id = rs.getString(1);
+                String fname = rs.getString(2);
+                String lname = rs.getString(3);
+                String email = rs.getString(4);
+                String phone = rs.getString(5);
+                String hdate = rs.getString(6);
+                String jobid = rs.getString(7);
+                String salary = rs.getString(8);
+                String comission = rs.getString(9);
+                String mgid = rs.getString(10);
+                String deptid = rs.getString(11);
+
+                mainObject.accumulate("Status:", "OK");
+                mainObject.accumulate("Timestamp:", time);
+                mainObject.accumulate("id",emp_id);
+                mainObject.accumulate("fname",fname);
+                mainObject.accumulate("lname",lname);
+                mainObject.accumulate("email",email);
+                mainObject.accumulate("phone",phone);
+                mainObject.accumulate("Hire Date",hdate);
+                mainObject.accumulate("job id",jobid);
+                mainObject.accumulate("Salary",salary);
+                mainObject.accumulate("Comission",comission);
+                mainObject.accumulate("manager id",mgid);
+                mainObject.accumulate("dept id",deptid);
+
+            }
+
+
+        } catch (ClassNotFoundException ex) {
+           Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+           
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+            mainObject.accumulate("Status:", "FAILED");
+            mainObject.accumulate("Timestamp:", time);
+            mainObject.accumulate("Message:", "Display of all the departments is NOT Successful");
+            mainObject.accumulate("ex:", ex);
+            System.out.println("catch block");
+
+        }
+
+        return mainObject.toString();
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("insert&{value1}&{value2}&{value3}&{value4}&{value5}&{value6}&{value7}&{value8}&{value9}&{value10}&{value11}")
+    public String empInsert(@PathParam("value1") int id, @PathParam("value2") String fname, @PathParam("value3") String lname, @PathParam("value4") String email,
+            @PathParam("value5") String phone,@PathParam("value6") String hdate, @PathParam("value7") String jid, 
+            @PathParam("value8") int salary, @PathParam("value9") int comission, 
+            @PathParam("value10") int manager, @PathParam("value11") int did) throws SQLException {
         
+        long time = Instant.now().getEpochSecond();
 
-    try {
-        Class.forName("oracle.jdbc.OracleDriver");
-         con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE", "hr", "inf5180");
-         stm = con.createStatement();
+        JSONObject mainObject = new JSONObject();
 
-        String sql = "select * from employees ";
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE","hr", "inf5180");
+           
+            PreparedStatement stm = null;
+            String sql = "insert into employees"
+                    + " values(?,?,?,?,?,?,?,?,?,?,?) ";
+            stm = con.prepareStatement(sql);
+            stm.setInt(1, id);
+            stm.setString(2, fname);
+            stm.setString(3, lname);
+            stm.setString(4, email);
+            stm.setString(5, phone);
+            stm.setString(6, hdate);
+            stm.setString(7, jid);
+            stm.setInt(8, salary);
+            stm.setInt(9, comission);
+            stm.setInt(10, manager);
+            stm.setInt(11, did);
+            
+            int rs = stm.executeUpdate();
+            
+            mainObject.accumulate("Status:", "OK");
+            mainObject.accumulate("Timestamp:", time);
+            mainObject.accumulate("message", "Succesfully inserted");
+            
+        }catch (ClassNotFoundException ex) {
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+            mainObject.accumulate("Status:", "FAILED");
+            mainObject.accumulate("Timestamp:", time);
+            mainObject.accumulate("Message:", "Insert Unsuccessful!");
+            mainObject.accumulate("ex:", ex);
+           
+        }
+    
+        return mainObject.toString();
+    }
 
-         rs = stm.executeQuery(sql);
+    @GET
+    @Produces("application/json")
+    @Path("delete&{value1}")
+    public String empDelete(@PathParam("value1") int id) throws SQLException {
+    
+        long time = Instant.now().getEpochSecond();
 
-        String dep_name = null;
-        int emp_id ,job_id,salary,manager_id,department_id,commision_pct;
-        String first_name,last_name,hire_date,email,phone_number;
+        JSONObject mainObject = new JSONObject();
         
-        while (rs.next()) {
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE","hr", "inf5180");
+           
+            PreparedStatement stm = null;
+            String sql = "delete from employees where EMPLOYEE_ID=? ";
+            stm = con.prepareStatement(sql);
+            stm.setInt(1, id);
+            int rs = stm.executeUpdate();
             
-            emp_id = rs.getInt("emp_id");
-            job_id= rs. getInt("job_id");
-            salary = rs.getInt("salary");
-            manager_id = rs.getInt("manager_id");
-            department_id = rs.getInt("department_id");
-            commision_pct= rs. getInt("commision_pct");
-            
-           first_name = rs.getString("first_name");
-           last_name = rs.getString("last_name");
-           hire_date = rs.getString("hire_date");
-           email = rs.getString("email");
-           phone_number = rs.getString("phone_number");
-            
-            mainObject.accumulate("Employee ID", dep_id);
-            mainObject.accumulate("JOb ID", manager_id);
-            mainObject.accumulate("Salary", location_id);
-            mainObject.accumulate("Manager ID", dep_name);
-            mainObject.accumulate("Department ID", dep_id);
-            mainObject.accumulate("Commision ID", manager_id);
-            mainObject.accumulate("Firstname", location_id);
-            mainObject.accumulate("Manager ID", dep_name);
-            
-            
-            
-            
-            
-            mainObject.accumulate("Status","OK");
-            mainObject.accumulate("Timestamp",now);
-            mainArray.add(mainObject);
-            mainObject.clear();
+            mainObject.accumulate("Status:", "OK");
+            mainObject.accumulate("Timestamp:", time);
+            mainObject.accumulate("message", "Succesfully deleted");
             
         }
-    } catch (SQLException | ClassNotFoundException ex) {
-        Logger.getLogger(DepartmentTable.class.getName()).log(Level.SEVERE, null, ex);
+        catch (ClassNotFoundException ex) {
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+            mainObject.accumulate("Status:", "FAILED");
+            mainObject.accumulate("Timestamp:", time);
+            mainObject.accumulate("Message:", "delete Unsuccessful!");
+            mainObject.accumulate("ex:", ex);
+           
+        }
+    
+        return mainObject.toString();
     }
-    finally {
-            closeDBConnection(rs, stm, con);
-            }
-        return mainArray.toString();
+        
+    @GET
+    @Produces("application/json")
+    @Path("update&{id}&{value}")
+    public String empUpdate(@PathParam("id") int id,@PathParam("value") String value ) throws SQLException {
+    
+        long time = Instant.now().getEpochSecond();
+
+        JSONObject mainObject = new JSONObject();
+        
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE","hr", "inf5180");
+           
+            PreparedStatement stm = null;
+            String sql = "Update employees set first_name =? where employee_id=?";
+            stm = con.prepareStatement(sql);
+            stm.setInt(2, id);
+            stm.setString(1,value);
+            int rs = stm.executeUpdate();
+            
+            mainObject.accumulate("Status:", "OK");
+            mainObject.accumulate("Timestamp:", time);
+            mainObject.accumulate("message", "Succesfully Updated");
+            
+        }
+        catch (ClassNotFoundException ex) {
+           Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+            mainObject.accumulate("Status:", "FAILED");
+            mainObject.accumulate("Timestamp:", time);
+            mainObject.accumulate("Message:", "Update Unsuccessful!");
+            mainObject.accumulate("ex:", ex);
+           
+        }
+    
+        return mainObject.toString();
     }
 
-    private void closeDBConnection(ResultSet rs, Statement stm, Connection con) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
+
+    @GET
+    @Produces("application/json")
+    @Path("select&{id}")
+    public String empSelect(@PathParam("id") int id) throws SQLException {
+        
+        long time = Instant.now().getEpochSecond();
+
+        JSONObject mainObject = new JSONObject();
+
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@144.217.163.57:1521:XE","hr", "inf5180");
+            Statement stm = con.createStatement();
+            String sql = "select * from employees where employee_id = " + id;
+            ResultSet rs = stm.executeQuery(sql);
+          
+           
+            if (rs.next()) {
+             
+                String emp_id = rs.getString(1);
+                String fname = rs.getString(2);
+                String lname = rs.getString(3);
+                String email = rs.getString(4);
+                String phone = rs.getString(5);
+                String hdate = rs.getString(6);
+                String jobid = rs.getString(7);
+                String salary = rs.getString(8);
+                String comission = rs.getString(9);
+                String mgid = rs.getString(10);
+                String deptid = rs.getString(11);
+
+                mainObject.accumulate("Status:", "OK");
+                mainObject.accumulate("Timestamp:", time);
+                mainObject.accumulate("id",emp_id);
+                mainObject.accumulate("fname",fname);
+                mainObject.accumulate("lname",lname);
+                mainObject.accumulate("email",email);
+                mainObject.accumulate("phone",phone);
+                mainObject.accumulate("Hire Date",hdate);
+                mainObject.accumulate("job id",jobid);
+                mainObject.accumulate("Salary",salary);
+                mainObject.accumulate("Comission",comission);
+                mainObject.accumulate("manager id",mgid);
+                mainObject.accumulate("dept id",deptid);
+
             }
-        }
-        if (stm != null) {
-            try {
-                stm.close();
-            } catch (SQLException e) {
+
+
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Employees.class.getName()).log(Level.SEVERE, null, ex);
+                mainObject.accumulate("Status:", "FAILED");
+                mainObject.accumulate("Timestamp:", time);
+                mainObject.accumulate("Message:", "Display of all the employees is NOT Successful");
+                mainObject.accumulate("ex:", ex);
                 
-            }
+
         }
-        if (con != null) {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                
-            }
-        }
+
+        return mainObject.toString();
     }
-    
-    
     
     
 }
